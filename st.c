@@ -493,16 +493,19 @@ historyBufferScroll(int n)
 	}
 	int const prevOffBuf = sel.alt ? 0 : insertOff + term.row;
 	term.line = &buf[*ptr = (buffSize + *ptr + n) % buffSize];
-	// Cut part of selection removed from buffer, and update sel.ne/b.
+	/* Cut part of selection removed from buffer, and update sel.ne/b. */
 	if (sel.ob.x != -1 && !histOp && n) {
 		int const offBuf = sel.alt ? 0 : insertOff + term.row,
 		          pb = rangeY(sel.ob.y - prevOffBuf),
 		          pe = rangeY(sel.oe.y - prevOffBuf);
 		int const b = rangeY(sel.ob.y - offBuf), nln = n < 0,
 		          e = rangeY(sel.oe.y - offBuf), last = offBuf - nln;
-		if (pb != b && ((pb < b) != nln)) sel.ob.y = last;
-		if (pe != e && ((pe < e) != nln)) sel.oe.y = last;
-		if (sel.oe.y == last && sel.ob.y == last) selclear();
+		if (pb != b && ((pb < b) != nln))
+			sel.ob.y = last;
+		if (pe != e && ((pe < e) != nln))
+			sel.oe.y = last;
+		if (sel.oe.y == last && sel.ob.y == last)
+			selclear();
 	}
 	selnormalize();
 	/* Clear the new region exposed by the shift. */
@@ -535,7 +538,9 @@ historyMove(int x, int y, int ly)
 	return fin;
 }
 
-void selnormalize(void) {
+void
+selnormalize(void)
+{
 	historyOpToggle(1, 1);
 
 	int const oldb = sel.nb.y, olde = sel.ne.y;
@@ -552,25 +557,33 @@ void selnormalize(void) {
 		sel.ne.y = !sel.swap ? ney : nby;
 		int const cnb = sel.nb.y < term.row, cne = sel.ne.y < term.row;
 		if (sel.type == SEL_REGULAR && sel.ob.y != sel.oe.y) {
-			if (cnb) sel.nb.x = (!sel.swap) ? sel.ob.x : sel.oe.x;
-			if (cne) sel.ne.x = (!sel.swap) ? sel.oe.x : sel.ob.x;
+			if (cnb)
+				sel.nb.x = (!sel.swap) ? sel.ob.x : sel.oe.x;
+			if (cne)
+				sel.ne.x = (!sel.swap) ? sel.oe.x : sel.ob.x;
 		} else {
-			if (cnb) sel.nb.x = MIN(sel.ob.x, sel.oe.x);
-			if (cne) sel.ne.x = MAX(sel.ob.x, sel.oe.x);
+			if (cnb)
+				sel.nb.x = MIN(sel.ob.x, sel.oe.x);
+			if (cne)
+				sel.ne.x = MAX(sel.ob.x, sel.oe.x);
 		}
 	}
-	int const nBet=sel.nb.y<=sel.ne.y, oBet=oldb<=olde;
+	int const nBet = sel.nb.y <= sel.ne.y, oBet = oldb <= olde;
 	for (int i = 0; i < term.row; ++i) {
 		int const n = nBet ? BETWEEN(i, sel.nb.y, sel.ne.y)
 		                   : OUT(i, sel.nb.y, sel.ne.y);
 		term.dirty[i] |= (sel.type == SEL_RECTANGULAR && n) ||
-		        (n != (oBet ? BETWEEN(i,oldb,olde) : OUT(i,oldb,olde)));
+			(n != (oBet ? BETWEEN(i, oldb, olde) : OUT(i, oldb, olde)));
 
 	}
-	if (BETWEEN(oldb, 0, term.row - 1)) term.dirty[oldb] = 1;
-	if (BETWEEN(olde, 0, term.row - 1)) term.dirty[olde] = 1;
-	if (BETWEEN(sel.nb.y, 0, term.row - 1)) term.dirty[sel.nb.y] = 1;
-	if (BETWEEN(sel.ne.y, 0, term.row - 1)) term.dirty[sel.ne.y] = 1;
+	if (BETWEEN(oldb, 0, term.row - 1))
+		term.dirty[oldb] = 1;
+	if (BETWEEN(olde, 0, term.row - 1))
+		term.dirty[olde] = 1;
+	if (BETWEEN(sel.nb.y, 0, term.row - 1))
+		term.dirty[sel.nb.y] = 1;
+	if (BETWEEN(sel.ne.y, 0, term.row - 1))
+		term.dirty[sel.ne.y] = 1;
 
 	historyOpToggle(-1, 1);
 }
@@ -585,7 +598,8 @@ selstart(int col, int row, int snap)
 	sel.snap = snap;
 	sel.oe.x = sel.ob.x = col;
 	sel.oe.y = sel.ob.y = row + !sel.alt * (histMode ? histOff : insertOff);
-	if (sel.snap != 0) sel.mode = SEL_READY;
+	if (sel.snap != 0)
+		sel.mode = SEL_READY;
 	selnormalize();
 }
 
@@ -618,9 +632,9 @@ selected(int x, int y)
 		    && BETWEEN(x, sel.nb.x, sel.ne.x);
 
 	return ((sel.nb.y > sel.ne.y) ? OUT(y, sel.nb.y, sel.ne.y)
-	                              : BETWEEN(y, sel.nb.y, sel.ne.y)) &&
-	       (y != sel.nb.y || x >= sel.nb.x) &&
-	       (y != sel.ne.y || x <= sel.ne.x);
+	                              : BETWEEN(y, sel.nb.y, sel.ne.y))
+	                                && (y != sel.nb.y || x >= sel.nb.x)
+	                                && (y != sel.ne.y || x <= sel.ne.x);
 }
 
 char *
@@ -635,9 +649,11 @@ getsel(void)
 
 	int const start = sel.swap ? sel.oe.y : sel.ob.y, h = rows();
 	int endy = (sel.swap ? sel.ob.y : sel.oe.y);
-	for (; endy < start; endy += h);
+	while (endy < start)
+		endy += h;
+
 	Line * const cbuf = IS_SET(MODE_ALTSCREEN) ? term.line : buf;
-	bufsize = (term.col+1) * (endy-start+1 ) * UTF_SIZ;
+	bufsize = (term.col + 1) * (endy - start + 1) * UTF_SIZ;
 	assert(bufsize > 0);
 	ptr = str = xmalloc(bufsize);
 
@@ -654,10 +670,13 @@ getsel(void)
 		}
 		last = &cbuf[yy][lastx];
 		if (!(cbuf[yy][term.col - 1].mode & ATTR_WRAP))
-			while (last > gp && last->u == ' ') --last;
+			while (last > gp && last->u == ' ')
+				--last;
 
 		for ( ; gp <= last; ++gp) {
-			if (gp->mode & ATTR_WDUMMY) continue;
+			if (gp->mode & ATTR_WDUMMY)
+				continue;
+
 			ptr += utf8encode(gp->u, ptr);
 		}
 
