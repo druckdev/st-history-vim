@@ -2708,12 +2708,12 @@ drawregion(int x1, int y1, int x2, int y2)
 		if (!BETWEEN(oy, 0, term.row-1) || !term.dirty[y])
 			continue;
 
-		if (++drawCount%40 == 0) printf("repainted %d %f\n", drawCount,
-		                                1.0*drawCount/term.row);
+		if (++drawCount % 40 == 0)
+			printf("repainted %d %f\n", drawCount, 1.0 * drawCount / term.row);
 		xdrawline(term.line[y], x1, oy, x2);
-		Glyph g = term.line[y][term.col - 1 ];
+		Glyph g = term.line[y][term.col - 1];
 		g.bg = bg;                                 // XXX: repaint debug
-		xdrawglyph(g, term.col-1, oy);             // XXX: repaint debug
+		xdrawglyph(g, term.col - 1, oy);           // XXX: repaint debug
 
 	}
 	memset(&term.dirty[y1], 0, sizeof(*term.dirty) * (y2 - y1));
